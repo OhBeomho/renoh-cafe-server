@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { auth } from "../auth/jwt";
 import { CafeModel, Cafe } from "../db/schema/Cafe";
-import { Post, PostModel } from "../db/schema/Post";
+import { Post } from "../db/schema/Post";
 import { UserModel, User } from "../db/schema/User";
 
 const router = Router();

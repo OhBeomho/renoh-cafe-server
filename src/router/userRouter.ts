@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { comparePassword, hashPassword } from "../auth/hashPassword";
 import { jwtSign } from "../auth/jwt";
+import { CafeModel } from "../db/schema/Cafe";
+import { CommentModel } from "../db/schema/Comment";
+import { PostModel } from "../db/schema/Post";
 import { UserModel } from "../db/schema/User";
 
 const router = Router();
@@ -64,7 +67,11 @@ router.get("/:username", async (req, res) => {
       return;
     }
 
-    res.json(user);
+    const cafeCount = (await CafeModel.find({ members: user._id })).length;
+    const postCount = (await PostModel.find({ members: user._id })).length;
+    const commentCount = (await CommentModel.find({ members: user._id })).length;
+
+    res.json({ ...user, cafeCount, postCount, commentCount });
   } catch (err) {
     console.error(err);
     res.sendStatus(500);

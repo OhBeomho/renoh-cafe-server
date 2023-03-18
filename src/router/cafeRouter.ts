@@ -47,9 +47,11 @@ router.get("/:id", async (req, res) => {
       return;
     }
 
-    cafe.posts = (await PostModel.populate<{ writer: User }>(cafe.posts, {
-      path: "writer"
-    })) as any[];
+    cafe.posts = (
+      await PostModel.populate<{ writer: User }>(cafe.posts, {
+        path: "writer"
+      })
+    ).sort((a, b) => b.createDate.getTime() - a.createDate.getTime()) as any[];
 
     res.json(cafe);
   } catch (err) {
@@ -58,20 +60,94 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// TODO
-router.get("/join/:username/:id", auth, async (req, res) => {
+router.get("/join/:id", auth, async (req, res) => {
+  const { username } = req.payload;
+
   try {
-    const user = await UserModel.find();
+    const cafe = await CafeModel.findById(req.params.id).populate<{ owner: User; members: User[] }>(
+      ["owner", "members"]
+    );
+    if (!cafe) {
+      res.sendStatus(404);
+      return;
+    } else if (
+      cafe.owner.username === username ||
+      cafe.members.find((member) => member.username === username)
+    ) {
+      return;
+    }
+
+    const user = await UserModel.findOne({ username }).orFail(new Error("Cannot find user"));
+
+    await CafeModel.findByIdAndUpdate(req.params.id, {
+      $push: {
+        members: user._id
+      }
+    });
+
+    res.sendStatus(200);
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
   }
 });
 
-router.get("/leave/:username/:id");
+router.get("/leave/:id", auth, async (req, res) => {
+  const { username } = req.payload;
+
+  try {
+    const cafe = await CafeModel.findById(req.params.id).populate<{ owner: User; members: User[] }>(
+      ["owner", "members"]
+    );
+    if (!cafe) {
+      res.sendStatus(404);
+      return;
+    } else if (
+      cafe.owner.username === username ||
+      !cafe.members.find((member) => member.username === username)
+    ) {
+      return;
+    }
+
+    const user = await UserModel.findOne({ username }).orFail(new Error("Cannot find user"));
+
+    await CafeModel.findByIdAndUpdate(req.params.id, {
+      $pull: {
+        members: user._id
+      }
+    });
+
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+});
+
+router.delete("/:id", auth, async (req, res) => {
+  const { username } = req.payload;
+
+  try {
+    const cafe = await CafeModel.findById(req.params.id).populate<{ owner: User }>("owner");
+    if (!cafe) {
+      res.sendStatus(404);
+      return;
+    } else if (cafe.owner.username !== username) {
+      res.sendStatus(400);
+      return;
+    }
+
+    await CafeModel.findByIdAndDelete(req.params.id);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+});
 
 router.post("/", auth, async (req, res) => {
-  const { username, cafeName } = req.body;
+  const { cafeName } = req.body;
+  const { username } = req.payload;
 
   try {
     const user = await UserModel.findOne({ username }).orFail(new Error("Cannot find user"));

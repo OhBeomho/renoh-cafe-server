@@ -2,6 +2,14 @@ import "dotenv/config";
 import { NextFunction, Request, Response } from "express";
 import { JsonWebTokenError, sign, verify } from "jsonwebtoken";
 
+declare global {
+  namespace Express {
+    export interface Request {
+      payload: any;
+    }
+  }
+}
+
 export function jwtSign(payload: { username: string; password: string }, expiresIn: string) {
   return sign(payload, String(process.env.JWT_SECRET), { expiresIn });
 }
@@ -12,7 +20,7 @@ export function auth(req: Request, res: Response, next: NextFunction) {
       throw new JsonWebTokenError("");
     }
 
-    verify(req.headers.authorization, String(process.env.JWT_SECRET));
+    req.payload = verify(req.headers.authorization, String(process.env.JWT_SECRET));
     next();
   } catch (err) {
     if ((err as Error).name === "JsonWebTokenError") {

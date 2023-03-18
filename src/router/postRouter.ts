@@ -18,11 +18,11 @@ router.get("/:id", async (req, res) => {
       return;
     }
 
-    const populatedComments = await CommentModel.populate<{ writer: User }>(post.comments, {
+    post.comments = (await CommentModel.populate<{ writer: User }>(post.comments, {
       path: "writer"
-    });
+    })) as any[];
 
-    res.json({ ...post, comments: populatedComments });
+    res.json(post);
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
@@ -34,6 +34,16 @@ router.post("/", auth, async (req, res) => {
 
   try {
     const user = await UserModel.findOne({ username }).orFail(new Error("Cannot find user"));
+
+    const cafe = await CafeModel.findById(cafeID).orFail(new Error("Cannot find cafe"));
+
+    if (
+      cafe.owner !== user._id ||
+      !cafe.members.map((value) => value.prototype).includes(user._id)
+    ) {
+      res.sendStatus(400);
+      return;
+    }
 
     const postID = (
       await PostModel.create({
@@ -82,7 +92,7 @@ router.post("/comment", auth, async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
     const exists = Boolean(await PostModel.exists({ _id: req.params.id }));
     if (!exists) {
@@ -97,7 +107,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.delete("/comment/:id", async (req, res) => {
+router.delete("/comment/:id", auth, async (req, res) => {
   try {
     const exists = Boolean(await CommentModel.exists({ _id: req.params.id }));
     if (!exists) {

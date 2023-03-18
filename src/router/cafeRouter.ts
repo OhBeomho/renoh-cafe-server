@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { auth } from "../auth/jwt";
 import { CafeModel, Cafe } from "../db/schema/Cafe";
-import { Post } from "../db/schema/Post";
+import { Post, PostModel } from "../db/schema/Post";
 import { UserModel, User } from "../db/schema/User";
 
 const router = Router();
@@ -47,12 +47,28 @@ router.get("/:id", async (req, res) => {
       return;
     }
 
+    cafe.posts = (await PostModel.populate<{ writer: User }>(cafe.posts, {
+      path: "writer"
+    })) as any[];
+
     res.json(cafe);
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
   }
 });
+
+// TODO
+router.get("/join/:username/:id", auth, async (req, res) => {
+  try {
+    const user = await UserModel.find();
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+});
+
+router.get("/leave/:username/:id");
 
 router.post("/", auth, async (req, res) => {
   const { username, cafeName } = req.body;

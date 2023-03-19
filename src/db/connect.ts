@@ -7,7 +7,9 @@ export default async function connect() {
   }
 
   mongoose.set("strictQuery", true);
-  await mongoose.connect(process.env.DB_URI);
+  await mongoose.connect(process.env.DB_URI, {
+    dbName: process.env.NODE_ENV || "dev"
+  });
 
   console.log("DB에 연결되었습니다.");
 }

@@ -71,7 +71,13 @@ router.get("/:username", async (req, res) => {
     const postCount = (await PostModel.find({ members: user._id })).length;
     const commentCount = (await CommentModel.find({ members: user._id })).length;
 
-    res.json({ ...user, cafeCount, postCount, commentCount });
+    res.json({
+      username: user.username,
+      joinDate: user.joinDate,
+      cafeCount,
+      postCount,
+      commentCount
+    });
   } catch (err) {
     console.error(err);
     res.sendStatus(500);

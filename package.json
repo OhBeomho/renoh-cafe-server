@@ -2,11 +2,12 @@
   "name": "renoh-cafe-server",
   "version": "1.0.0",
   "description": "",
-  "main": "./build/index.js",
+  "main": "build/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.ts",
-    "build": "npx tsc -p ."
+    "build": "npx tsc -p .",
+    "start": "node build/index.js"
   },
   "author": "OhBeomho",
   "license": "ISC",

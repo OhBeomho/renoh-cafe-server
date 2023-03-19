@@ -168,11 +168,11 @@ router.post("/", auth, async (req, res) => {
 
 router.get("/search/:text", async (req, res) => {
   try {
-    const result = await CafeModel.find({ cafeName: req.params.text }).populate<{ owner: User }>(
-      "owner"
-    );
+    const result = await CafeModel.find({
+      cafeName: { $regex: req.params.text, $options: "g" }
+    }).populate<{ owner: User }>("owner");
 
-    res.json(result);
+    res.json(result.sort((a, b) => b.members.length - a.members.length));
   } catch (err) {
     console.error(err);
     res.sendStatus(500);

@@ -67,9 +67,10 @@ router.get("/:username", async (req, res) => {
       return;
     }
 
-    const cafeCount = (await CafeModel.find({ members: user._id })).length;
-    const postCount = (await PostModel.find({ members: user._id })).length;
-    const commentCount = (await CommentModel.find({ members: user._id })).length;
+    const cafeCount = (await CafeModel.find({ $or: [{ members: user._id }, { owner: user._id }] }))
+      .length;
+    const postCount = (await PostModel.find({ writer: user._id })).length;
+    const commentCount = (await CommentModel.find({ writer: user._id })).length;
 
     res.json({
       username: user.username,

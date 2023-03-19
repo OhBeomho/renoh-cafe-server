@@ -5,7 +5,7 @@ import { JsonWebTokenError, sign, verify } from "jsonwebtoken";
 declare global {
   namespace Express {
     export interface Request {
-      payload: any;
+      user: any;
     }
   }
 }
@@ -20,7 +20,7 @@ export function auth(req: Request, res: Response, next: NextFunction) {
       throw new JsonWebTokenError("");
     }
 
-    req.payload = verify(req.headers.authorization, String(process.env.JWT_SECRET));
+    req.user = verify(req.headers.authorization, String(process.env.JWT_SECRET));
     next();
   } catch (err) {
     if ((err as Error).name === "JsonWebTokenError") {

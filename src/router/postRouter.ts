@@ -33,7 +33,7 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", auth, async (req, res) => {
   const { cafeID, title, content } = req.body;
-  const { username } = req.payload;
+  const { username } = req.user;
 
   try {
     const cafe = await CafeModel.findById(cafeID)
@@ -73,7 +73,7 @@ router.post("/", auth, async (req, res) => {
 
 router.post("/comment", auth, async (req, res) => {
   const { postID, content } = req.body;
-  const { username } = req.payload;
+  const { username } = req.user;
 
   try {
     const user = await UserModel.findOne({ username }).orFail(new Error("Cannot find user"));
@@ -99,7 +99,7 @@ router.post("/comment", auth, async (req, res) => {
 });
 
 router.delete("/:id", auth, async (req, res) => {
-  const { username } = req.payload;
+  const { username } = req.user;
 
   try {
     const post = await PostModel.findById(req.params.id).populate<{ writer: User }>("writer");
@@ -120,7 +120,7 @@ router.delete("/:id", auth, async (req, res) => {
 });
 
 router.delete("/comment/:id", auth, async (req, res) => {
-  const { username } = req.payload;
+  const { username } = req.user;
 
   try {
     const comment = await CommentModel.findById(req.params.id).populate<{ writer: User }>("writer");

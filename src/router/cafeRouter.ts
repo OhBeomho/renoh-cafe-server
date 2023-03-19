@@ -61,7 +61,7 @@ router.get("/:id", async (req, res) => {
 });
 
 router.get("/join/:id", auth, async (req, res) => {
-  const { username } = req.payload;
+  const { username } = req.user;
 
   try {
     const cafe = await CafeModel.findById(req.params.id).populate<{ owner: User; members: User[] }>(
@@ -93,7 +93,7 @@ router.get("/join/:id", auth, async (req, res) => {
 });
 
 router.get("/leave/:id", auth, async (req, res) => {
-  const { username } = req.payload;
+  const { username } = req.user;
 
   try {
     const cafe = await CafeModel.findById(req.params.id).populate<{ owner: User; members: User[] }>(
@@ -125,7 +125,7 @@ router.get("/leave/:id", auth, async (req, res) => {
 });
 
 router.delete("/:id", auth, async (req, res) => {
-  const { username } = req.payload;
+  const { username } = req.user;
 
   try {
     const cafe = await CafeModel.findById(req.params.id).populate<{ owner: User }>("owner");
@@ -147,7 +147,7 @@ router.delete("/:id", auth, async (req, res) => {
 
 router.post("/", auth, async (req, res) => {
   const { cafeName } = req.body;
-  const { username } = req.payload;
+  const { username } = req.user;
 
   try {
     const user = await UserModel.findOne({ username }).orFail(new Error("Cannot find user"));

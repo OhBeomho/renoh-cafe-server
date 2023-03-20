@@ -140,15 +140,14 @@ router.delete("/:id", auth, async (req, res) => {
     }
 
     await CafeModel.findByIdAndDelete(req.params.id);
-    // TODO: Delete cafe posts and comments.
     const posts = cafe.posts;
     const populatedPosts = (await CafeModel.populate<{ posts: Post[] }>(cafe, { path: "posts" })).posts;
     const comments: mongoose.Types.ObjectId[] = [];
 
-    populatedPosts.forEach((post) => comments.push(...post.comments.map((comment) => comment._id)));
+    populatedPosts.forEach((post) => comments.push(...post.comments));
 
     await Promise.all([
-      ...posts.map((post) => PostModel.findByIdAndDelete(post.prototype)),
+      ...posts.map((post) => PostModel.findByIdAndDelete(post)),
       ...comments.map((comment) => CommentModel.findByIdAndDelete(comment))
     ]);
 

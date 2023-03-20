@@ -112,6 +112,9 @@ router.delete("/:id", auth, async (req, res) => {
     }
 
     await PostModel.findByIdAndDelete(req.params.id);
+    // TODO: Fix not deleting comments
+    await Promise.all(post.comments.map((comment) => CommentModel.findByIdAndDelete(comment.prototype)));
+
     res.sendStatus(200);
   } catch (err) {
     console.error(err);

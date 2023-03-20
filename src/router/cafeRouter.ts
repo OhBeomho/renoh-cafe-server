@@ -1,6 +1,8 @@
 import { Router } from "express";
+import mongoose from "mongoose";
 import { auth } from "../auth/jwt";
 import { CafeModel, Cafe } from "../db/schema/Cafe";
+import { CommentModel } from "../db/schema/Comment";
 import { Post, PostModel } from "../db/schema/Post";
 import { UserModel, User } from "../db/schema/User";
 
@@ -131,13 +133,25 @@ router.delete("/:id", auth, async (req, res) => {
     const cafe = await CafeModel.findById(req.params.id).populate<{ owner: User }>("owner");
     if (!cafe) {
       res.sendStatus(404);
-      return;
+      return
     } else if (cafe.owner.username !== username) {
       res.sendStatus(400);
       return;
     }
 
     await CafeModel.findByIdAndDelete(req.params.id);
+    // TODO: Delete cafe posts and comments.
+    const posts = cafe.posts;
+    const populatedPosts = (await CafeModel.populate<{ posts: Post[] }>(cafe, { path: "posts" })).posts;
+    const comments: mongoose.Types.ObjectId[] = [];
+
+    populatedPosts.forEach((post) => comments.push(...post.comments.map((comment) => comment._id)));
+
+    await Promise.all([
+      ...posts.map((post) => PostModel.findByIdAndDelete(post.prototype)),
+      ...comments.map((comment) => CommentModel.findByIdAndDelete(comment))
+    ]);
+
     res.sendStatus(200);
   } catch (err) {
     console.error(err);

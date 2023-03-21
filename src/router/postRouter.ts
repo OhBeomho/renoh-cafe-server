@@ -41,7 +41,7 @@ router.post("/", auth, async (req, res) => {
       .orFail(new Error("Cannot find cafe"));
 
     if (
-      cafe.owner.username !== username &&
+      cafe.owner?.username !== username &&
       !cafe.members.find((member) => member.username === username)
     ) {
       res.sendStatus(400);
@@ -135,6 +135,7 @@ router.delete("/comment/:id", auth, async (req, res) => {
     }
 
     await CommentModel.findByIdAndDelete(req.params.id);
+
     res.sendStatus(200);
   } catch (err) {
     console.error(err);

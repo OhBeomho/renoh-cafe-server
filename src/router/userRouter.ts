@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { comparePassword, hashPassword } from "../auth/hashPassword";
-import { jwtSign } from "../auth/jwt";
+import { auth, jwtSign } from "../auth/jwt";
 import { CafeModel } from "../db/schema/Cafe";
 import { CommentModel } from "../db/schema/Comment";
 import { PostModel } from "../db/schema/Post";
@@ -79,6 +79,28 @@ router.get("/:username", async (req, res) => {
       postCount,
       commentCount
     });
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+});
+
+router.delete("/:username", auth, async (req, res) => {
+  const { username, password } = req.user;
+
+  try {
+    const user = await UserModel.findOne({ username: req.params.username });
+    if (!user) {
+      res.sendStatus(404);
+      return;
+    } else if (user.username !== username || !comparePassword(password, user.password)) {
+      res.sendStatus(400);
+      return;
+    }
+
+    await UserModel.findByIdAndDelete(user._id);
+
+    res.sendStatus(200);
   } catch (err) {
     console.error(err);
     res.sendStatus(500);

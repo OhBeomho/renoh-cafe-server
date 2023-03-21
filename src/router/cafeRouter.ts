@@ -73,7 +73,7 @@ router.get("/join/:id", auth, async (req, res) => {
       res.sendStatus(404);
       return;
     } else if (
-      cafe.owner.username === username ||
+      (cafe.owner && cafe.owner.username === username) ||
       cafe.members.find((member) => member.username === username)
     ) {
       return;
@@ -105,7 +105,7 @@ router.get("/leave/:id", auth, async (req, res) => {
       res.sendStatus(404);
       return;
     } else if (
-      cafe.owner.username === username ||
+      (cafe.owner && cafe.owner.username === username) ||
       !cafe.members.find((member) => member.username === username)
     ) {
       return;

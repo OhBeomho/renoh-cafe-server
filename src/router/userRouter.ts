@@ -100,6 +100,15 @@ router.delete("/:username", auth, async (req, res) => {
 
     await UserModel.findByIdAndDelete(user._id);
 
+    await CafeModel.updateMany(
+      { members: user._id },
+      {
+        $pull: {
+          members: user._id
+        }
+      }
+    );
+
     res.sendStatus(200);
   } catch (err) {
     console.error(err);

@@ -133,7 +133,7 @@ router.delete("/:id", auth, async (req, res) => {
     const cafe = await CafeModel.findById(req.params.id).populate<{ owner: User }>("owner");
     if (!cafe) {
       res.sendStatus(404);
-      return
+      return;
     } else if (cafe.owner.username !== username) {
       res.sendStatus(400);
       return;
@@ -141,7 +141,8 @@ router.delete("/:id", auth, async (req, res) => {
 
     await CafeModel.findByIdAndDelete(req.params.id);
     const posts = cafe.posts;
-    const populatedPosts = (await CafeModel.populate<{ posts: Post[] }>(cafe, { path: "posts" })).posts;
+    const populatedPosts = (await CafeModel.populate<{ posts: Post[] }>(cafe, { path: "posts" }))
+      .posts;
     const comments: mongoose.Types.ObjectId[] = [];
 
     populatedPosts.forEach((post) => comments.push(...post.comments));
